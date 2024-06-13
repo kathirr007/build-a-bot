@@ -11,10 +11,10 @@
         </span>
       </div>
       <img :src="selectedRobot.head.imageUrl" alt="head" />
-      <button @click="selectPreviousPart('heads', 'selectedHeadIndex')" class="prev-selector">
+      <button @click="selectPreviousPart('heads', 'head')" class="prev-selector">
         &#9668;
       </button>
-      <button @click="selectNextPart('heads', 'selectedHeadIndex')" class="next-selector">
+      <button @click="selectNextPart('heads', 'head')" class="next-selector">
         &#9658;
       </button>
     </div>
@@ -22,29 +22,29 @@
   <div class="middle-row">
     <div class="left part">
       <img :src="selectedRobot.leftArm.imageUrl" alt="left arm" />
-      <button  @click="selectPreviousPart('arms', 'selectedLeftArmIndex')" class="prev-selector">
+      <button  @click="selectPreviousPart('arms', 'leftArm')" class="prev-selector">
         &#9650;
       </button>
       <button
-      @click="selectNextPart('arms', 'selectedLeftArmIndex')"
+      @click="selectNextPart('arms', 'leftArm')"
        class="next-selector">&#9660;</button>
     </div>
     <div class="center part">
       <img :src="selectedRobot.torso.imageUrl" alt="torso" />
       <button
-      @click="selectNextPart('torsos', 'selectedTorsoIndex')"
+      @click="selectNextPart('torsos', 'torso')"
        class="prev-selector">&#9668;</button>
       <button
-      @click="selectNextPart('torsos', 'selectedTorsoIndex')"
+      @click="selectNextPart('torsos', 'torso')"
        class="next-selector">&#9658;</button>
     </div>
     <div class="right part">
       <img :src="selectedRobot.rightArm.imageUrl" alt="right arm" />
       <button
-      @click="selectNextPart('arms', 'selectedRightArmIndex')"
+      @click="selectNextPart('arms', 'rightArm')"
        class="prev-selector">&#9650;</button>
       <button
-      @click="selectNextPart('arms', 'selectedRightArmIndex')"
+      @click="selectNextPart('arms', 'rightArm')"
        class="next-selector">&#9660;</button>
     </div>
   </div>
@@ -52,10 +52,10 @@
     <div class="bottom part">
       <img :src="selectedRobot.base.imageUrl" alt="base" />
       <button
-      @click="selectNextPart('bases', 'selectedBaseIndex')"
+      @click="selectNextPart('bases', 'base')"
        class="prev-selector">&#9668;</button>
       <button
-      @click="selectNextPart('bases', 'selectedBaseIndex')"
+      @click="selectNextPart('bases', 'base')"
        class="next-selector">&#9658;</button>
     </div>
   </div>
@@ -80,7 +80,10 @@
 </div>
 </template>
 
-<script>
+<script setup>
+import {
+  computed, getCurrentInstance, reactive, ref,
+} from 'vue';
 import parts from '../data/parts';
 import { toCurrency } from '../shared/formatters';
 
@@ -94,54 +97,74 @@ function getPreviousValidIndex(index, length) {
   return decrementedIndex < 0 ? length - 1 : decrementedIndex;
 }
 
-export default {
-  name: 'RobotBuilder',
-  data() {
-    return {
-      availableParts: parts,
-      selectedHeadIndex: 0,
-      selectedLeftArmIndex: 0,
-      selectedTorsoIndex: 0,
-      selectedRightArmIndex: 0,
-      selectedBaseIndex: 0,
-      cart: [],
-    };
-  },
-  computed: {
-    selectedRobot() {
-      return {
-        head: this.availableParts.heads[this.selectedHeadIndex],
-        leftArm: this.availableParts.arms[this.selectedLeftArmIndex],
-        torso: this.availableParts.torsos[this.selectedTorsoIndex],
-        rightArm: this.availableParts.arms[this.selectedRightArmIndex],
-        base: this.availableParts.bases[this.selectedBaseIndex],
-      };
-    },
-  },
-  methods: {
-    toCurrency,
-    addToCart() {
-      const robot = this.selectedRobot;
-      const cost = robot.head.cost + robot.leftArm.cost
+const availableParts = ref(parts);
+/* const selectedHeadIndex = ref(0);
+const selectedLeftArmIndex = ref(0);
+const selectedTorsoIndex = ref(0);
+const selectedRightArmIndex = ref(0);
+const selectedBaseIndex = ref(0); */
+const selectedIndex = reactive({
+  head: 0,
+  leftArm: 0,
+  torso: 0,
+  rightArm: 0,
+  base: 0,
+});
+const cart = ref([]);
+
+// const instance = getCurrentInstance();
+
+const selectedRobot = computed(() => ({
+  head: availableParts.value.heads[selectedIndex.head],
+  leftArm: availableParts.value.arms[selectedIndex.leftArm],
+  torso: availableParts.value.torsos[selectedIndex.torso],
+  rightArm: availableParts.value.arms[selectedIndex.rightArm],
+  base: availableParts.value.bases[selectedIndex.base],
+}));
+
+const addToCart = () => {
+  const robot = selectedRobot.value;
+  const cost = robot.head.cost + robot.leftArm.cost
         + robot.torso.cost + robot.rightArm.cost
         + robot.base.cost;
 
-      this.cart.push({ ...robot, cost });
-    },
-    selectNextPart(partName = 'heads', partIndex = 'selectedHeadIndex') {
-      this[partIndex] = getNextValidIndex(
-        this[partIndex],
-        this.availableParts[partName].length,
-      );
-    },
-    selectPreviousPart(partName = 'heads', partIndex = 'selectedHeadIndex') {
-      this[partIndex] = getPreviousValidIndex(
-        this[partIndex],
-        this.availableParts[partName].length,
-      );
-    },
-  },
+  cart.value.push({ ...robot, cost });
 };
+const selectNextPart = (partName = 'heads', partIndex = 'head') => {
+  /* instance.setupState[partIndex] = getNextValidIndex(
+    instance.setupState[partIndex],
+    availableParts.value[partName].length,
+  ); */
+  selectedIndex[partIndex] = getNextValidIndex(
+    selectedIndex[partIndex],
+    availableParts.value[partName].length,
+  );
+};
+const selectPreviousPart = (partName = 'heads', partIndex = 'head') => {
+  /* instance.setupState[partIndex] = getPreviousValidIndex(
+    instance.setupState[partIndex],
+    availableParts.value[partName].length,
+  ); */
+  selectedIndex[partIndex] = getPreviousValidIndex(
+    selectedIndex[partIndex],
+    availableParts.value[partName].length,
+  );
+};
+
+/* export default {
+  name: 'RobotBuilder',
+  data() {
+    return {
+    };
+  },
+  computed: {
+
+  },
+  methods: {
+    toCurrency,
+
+  },
+}; */
 </script>
 
 <style lang="scss" scoped>
@@ -280,5 +303,10 @@ td,th {
 
 .cost {
   text-align: right;
+}
+
+.sale {
+  color: darkmagenta;
+  font-weight: bold;
 }
 </style>

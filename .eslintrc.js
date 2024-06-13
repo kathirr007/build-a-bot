@@ -16,5 +16,6 @@ module.exports = {
     'linebreak-style': 0,
     'operator-linebreak': 0,
     'vue/no-unused-components': 'off',
+    'no-unused-vars': 'off',
   },
 };
