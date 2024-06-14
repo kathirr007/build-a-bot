@@ -1,23 +1,53 @@
 <template>
 <div class="content">
-  <button @click="addToCart()" class="add-to-cart">
-    Add to Cart
-  </button>
+  <div class="preview" v-if="selectedRobot">
+    <CollapsibleSection>
+      <template v-slot:collapse>
+        &#x25B2; Hide
+      </template>
+      <template v-slot:expand>
+        &#x25BC; Show
+      </template>
+      <div class="preview-content">
+        <div class="top-row">
+          <!-- {{ selectedRobot.head.id }} -->
+          <img alt="head" :src="selectedRobot.head.imageUrl" />
+        </div>
+        <div class="middle-row">
+          <!-- {{ selectedRobot.leftArm.id }} -->
+          <img alt="leftArm" :src="selectedRobot.leftArm.imageUrl" class="rotate-left" />
+          <img alt="torsos" :src="selectedRobot.torsos.imageUrl" />
+          <img alt="rightArm" :src="selectedRobot.rightArm.imageUrl" class="rotate-right" />
+        </div>
+        <div class="bottom-row">
+          <img alt="base" :src="selectedRobot.base.imageUrl" />
+        </div>
+      </div>
+    </CollapsibleSection>
+    <button @click="addToCart()" class="add-to-cart">
+      Add to Cart
+    </button>
+  </div>
   <div class="top-row">
       <div class="robot-name">{{ selectedRobot.head.title }}
         <span v-if="selectedRobot.head.onSale" class="sale">
           Sale!
         </span>
       </div>
-      <PartSelector class="top" :part-name="'heads'" />
+      <PartSelector position="top" :part-name="'heads'"
+      @part-selected="part => selectedRobot.head = part" />
   </div>
   <div class="middle-row">
-    <PartSelector class="left" :part-name="'arms'" />
-    <PartSelector class="center"  :part-name="'torsos'" />
-    <PartSelector class="right" :part-name="'arms'" />
+    <PartSelector position="left" :part-name="'arms'"
+    @part-selected="part => selectedRobot.leftArm = part" />
+    <PartSelector position="center"  :part-name="'torsos'"
+    @part-selected="part => selectedRobot.torsos = part" />
+    <PartSelector position="right" :part-name="'arms'"
+    @part-selected="part => selectedRobot.rightArm = part" />
   </div>
   <div class="bottom-row">
-    <PartSelector class="bottom" :part-name="'bases'" />
+    <PartSelector position="bottom" :part-name="'bases'"
+    @part-selected="part => selectedRobot.base = part" />
   </div>
 </div>
 <div>
@@ -44,6 +74,7 @@
 import {
   computed, reactive, ref,
 } from 'vue';
+import CollapsibleSection from '@/shared/CollapsibleSection.vue';
 import parts from '../data/parts';
 import { toCurrency } from '../shared/formatters';
 import PartSelector from './PartSelector.vue';
@@ -75,18 +106,20 @@ const cart = ref([]);
 
 // const instance = getCurrentInstance();
 
-const selectedRobot = computed(() => ({
-  head: availableParts.value.heads[selectedIndex.head],
-  leftArm: availableParts.value.arms[selectedIndex.leftArm],
-  torso: availableParts.value.torsos[selectedIndex.torso],
-  rightArm: availableParts.value.arms[selectedIndex.rightArm],
-  base: availableParts.value.bases[selectedIndex.base],
-}));
+const selectedRobot = ref({
+  head: {},
+  leftArm: {},
+  torsos: {},
+  rightArm: {},
+  base: {},
+});
+
+// console.log(selectedRobot.value);
 
 const addToCart = () => {
   const robot = selectedRobot.value;
   const cost = robot.head.cost + robot.leftArm.cost
-        + robot.torso.cost + robot.rightArm.cost
+        + robot.torsos.cost + robot.rightArm.cost
         + robot.base.cost;
 
   cart.value.push({ ...robot, cost });
@@ -129,6 +162,33 @@ const selectPreviousPart = (partName = 'heads', partIndex = 'head') => {
 </script>
 
 <style lang="scss" scoped>
+.preview {
+  position: absolute;
+  top: -20px;
+  right: 0;
+  width: 230px;
+  height: 230px;
+  padding: 5px;
+}
+
+.preview-content {
+  border: 1px solid #999;
+  padding: 5px;
+}
+
+.preview img {
+  width: 45px;
+  height: 45px;
+}
+
+.rotate-right {
+  transform: rotate(90deg);
+}
+
+.rotate-left {
+  transform: rotate(-90deg);
+}
+
 .part {
   position: relative;
   width: 200px;
@@ -158,19 +218,20 @@ const selectPreviousPart = (partName = 'heads', partIndex = 'head') => {
 
 .robot-name {
   position: absolute;
-  top: -25px;
+  top: 5px;
   text-align: center;
   width: 100%;
 }
 
 .content {
   position: relative;
+  padding-top: 1.5rem;
 }
 
 .add-to-cart {
   position: absolute;
-  right: 30px;
-  width: 220px;
+  /* right: 30px; */
+  width: 230px;
   padding: 3px;
   font-size: 16px;
 }

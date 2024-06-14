@@ -1,5 +1,5 @@
 <template>
-  <div class="part">
+  <div class="part" :class="position">
     <img :src="selectedPart.imageUrl" alt="part" />
     <button @click="selectPreviousPart()" class="prev-selector" aria-label="prev-selector"></button>
     <button @click="selectNextPart()" class="next-selector"  aria-label="next-selector"></button>
@@ -8,17 +8,35 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+import {
+  computed, onMounted, onUpdated, ref,
+} from 'vue';
 import availableParts from '../data/parts';
 
 const props = defineProps({
-  partName: String,
-  partIndex: Number,
+  partName: {
+    type: String,
+    required: true,
+    validator(value) {
+      return ['heads', 'torsos', 'arms', 'bases'].includes(value);
+    },
+  },
+  position: {
+    type: String,
+    required: true,
+    validator(value) {
+      return ['left', 'right', 'top', 'center', 'bottom'].includes(value);
+    },
+  },
 });
 
-const parts = availableParts[props.partName];
+const emit = defineEmits(['partSelected']);
+
+const parts = ref(availableParts[props.partName]);
 const selectedPartIndex = ref(0);
-const selectedPart = computed(() => parts[selectedPartIndex.value]);
+const selectedPart = computed(() => parts.value[selectedPartIndex.value]);
+
+emit('partSelected', selectedPart);
 
 function getPreviousValidIndex(index, length) {
   const deprecatedIndex = index - 1;
@@ -33,17 +51,20 @@ function getNextValidIndex(index, length) {
 const selectNextPart = () => {
   selectedPartIndex.value = getNextValidIndex(
     selectedPartIndex.value,
-    parts.length,
+    parts.value.length,
   );
-  console.log(selectedPart.value);
 };
 
 const selectPreviousPart = () => {
   selectedPartIndex.value = getPreviousValidIndex(
     selectedPartIndex.value,
-    parts.length,
+    parts.value.length,
   );
 };
+
+onUpdated(() => {
+  emit('partSelected', selectedPart);
+});
 </script>
 
 <style scoped>
