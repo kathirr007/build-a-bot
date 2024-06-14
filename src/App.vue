@@ -11,6 +11,8 @@
   </header>
   <main>
     <!-- <HomePage msg="Welcome to Your Vue.js App"/> -->
+    <!-- <div class="robot-builder">
+    </div> -->
     <RobotBuilder />
   </main>
 </template>
@@ -37,18 +39,27 @@ body {
   background: linear-gradient(to bottom, #555, #999);
   background-attachment: fixed;
 }
+</style>
+
+<style scoped lang="scss">
+
+:deep(.robot-builder) {
+  .add-to-cart {
+    color: red;
+  }
+}
 
 main {
   margin: 0 auto;
   padding: 30px;
   background-color: #fff;
-  width: 1400px;
+  width: calc(100% - 60px);
   min-height: 300px;
 }
 
 header {
   background-color: #999;
-  width: 1460px;
+  width: 100%;
   margin: 0 auto;
 }
 
