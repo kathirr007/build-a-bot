@@ -3,8 +3,20 @@
     <nav>
       <ul>
         <li class="nav-item">
-          <img src="./assets/build-a-bot-logo.png" alt="logo" class="logo" />
-          Build-a-Bot
+          <router-link class="nav-link" :to="{name: 'Home'}" active-class="home-active">
+            <img src="./assets/build-a-bot-logo.png" alt="logo" class="logo" />
+            Build-a-Bot
+          </router-link>
+        </li>
+        <li class="nav-item">
+          <router-link class="nav-link" :to="{name: 'Build'}">
+            Build
+          </router-link>
+        </li>
+        <li class="nav-item">
+          <router-link class="nav-link" :to="{name: 'Search'}">
+            Search
+          </router-link>
         </li>
       </ul>
     </nav>
@@ -13,7 +25,8 @@
     <!-- <HomePage msg="Welcome to Your Vue.js App"/> -->
     <!-- <div class="robot-builder">
     </div> -->
-    <RobotBuilder />
+    <!-- <RobotBuilder /> -->
+     <router-view />
   </main>
 </template>
 
@@ -47,6 +60,20 @@ body {
   .add-to-cart {
     color: red;
   }
+}
+
+.nav-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.active-link {
+  color: #fff;
+  }
+
+.home-active {
+  color: #fff;
+  text-shadow: 1px 2px #000;
 }
 
 main {
