@@ -1,5 +1,6 @@
 <template>
   <div class="part" :class="position">
+    <!-- {{ partsStore.parts }} -->
     <router-link :to="{name: 'Parts', params: {
       partType: selectedPart.type, id: selectedPart.id
     }}">
@@ -13,8 +14,9 @@
 
 <script setup>
 import {
-  computed, onMounted, onUpdated, ref,
+  computed, onMounted, onUpdated, ref, watch,
 } from 'vue';
+import { usePartsStore } from '@/stores/partsStore';
 import availableParts from '../data/parts';
 
 const props = defineProps({
@@ -36,11 +38,18 @@ const props = defineProps({
 
 const emit = defineEmits(['partSelected']);
 
+const partsStore = usePartsStore();
+partsStore.getParts();
+
 const parts = ref(availableParts[props.partName]);
 const selectedPartIndex = ref(0);
-const selectedPart = computed(() => parts.value[selectedPartIndex.value]);
-
-emit('partSelected', selectedPart);
+const selectedPart = computed(() => {
+  if (partsStore.parts) {
+    return partsStore.parts[props.partName][selectedPartIndex.value];
+  }
+  return null;
+});
+// const selectedPart = ref(null);
 
 function getPreviousValidIndex(index, length) {
   const deprecatedIndex = index - 1;
@@ -66,7 +75,16 @@ const selectPreviousPart = () => {
   );
 };
 
+/* watch(() => partsStore.parts, (val) => {
+  debugger;
+  selectedPart.value = val[selectedPartIndex.value];
+}); */
+
 onUpdated(() => {
+  emit('partSelected', selectedPart);
+});
+
+onMounted(() => {
   emit('partSelected', selectedPart);
 });
 </script>

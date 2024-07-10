@@ -18,6 +18,11 @@
             Search
           </router-link>
         </li>
+        <li class="nav-item cart">
+          <router-link class="nav-link" :to="'/cart'">
+            Cart
+          </router-link>
+        </li>
       </ul>
     </nav>
   </header>
@@ -106,5 +111,11 @@ ul {
   vertical-align: middle;
   height: 30px;
 
+}
+
+.nav-item.cart {
+  position: relative;
+  margin-left: auto;
+  border-right: none;
 }
 </style>

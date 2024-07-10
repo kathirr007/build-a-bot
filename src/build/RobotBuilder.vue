@@ -1,5 +1,5 @@
 <template>
-<div class="content">
+<div class="content" v-if="partsStore.parts">
   <div class="preview" v-if="selectedRobot">
     <CollapsibleSection>
       <template v-slot:collapse>
@@ -35,39 +35,25 @@
         </span>
       </div>
       <PartSelector position="top" :part-name="'heads'"
-      @part-selected="part => selectedRobot.head = part" />
+      @part-selected="handlePartSelected($event, 'head')" />
   </div>
   <div class="middle-row">
     <PartSelector position="left" :part-name="'arms'"
-    @part-selected="part => selectedRobot.leftArm = part" />
+    @part-selected="handlePartSelected($event, 'leftArm')" />
     <PartSelector position="center"  :part-name="'torsos'"
-    @part-selected="part => selectedRobot.torsos = part" />
+    @part-selected="handlePartSelected($event, 'torsos')" />
     <PartSelector position="right" :part-name="'arms'"
-    @part-selected="part => selectedRobot.rightArm = part" />
+    @part-selected="handlePartSelected($event, 'rightArm')" />
   </div>
   <div class="bottom-row">
     <PartSelector position="bottom" :part-name="'bases'"
-    @part-selected="part => selectedRobot.base = part" />
+    @part-selected="handlePartSelected($event, 'base')" />
   </div>
 </div>
-<div>
-  <h1>Cart</h1>
-  <table>
-    <thead>
-      <tr>
-        <th>Robot</th>
-        <th class="cost">Cost</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr v-for="(robot, index) in cart" :key="index">
-        <td>{{ robot.head.title }}</td>
-        <td class="cost">{{ toCurrency(robot.cost) }}</td>
-      </tr>
-    </tbody>
-  </table>
 
-</div>
+<h2>
+  Last Robot Cost: {{ lastRobotCost }}
+</h2>
 </template>
 
 <script setup>
@@ -75,9 +61,17 @@ import {
   computed, reactive, ref,
 } from 'vue';
 import CollapsibleSection from '@/shared/CollapsibleSection.vue';
+import { useCartStore } from '@/stores/cartStore';
+import { storeToRefs } from 'pinia';
+import { usePartsStore } from '@/stores/partsStore';
 import parts from '../data/parts';
 import { toCurrency } from '../shared/formatters';
 import PartSelector from './PartSelector.vue';
+
+const { lastRobotCost, cart } = storeToRefs(useCartStore());
+const partsStore = usePartsStore();
+
+partsStore.getParts();
 
 function getNextValidIndex(index, length) {
   const incrementedIndex = index + 1;
@@ -102,7 +96,7 @@ const selectedIndex = reactive({
   rightArm: 0,
   base: 0,
 });
-const cart = ref([]);
+// const cart = ref([]);
 
 // const instance = getCurrentInstance();
 
@@ -123,6 +117,7 @@ const addToCart = () => {
         + robot.base.cost;
 
   cart.value.push({ ...robot, cost });
+  lastRobotCost.value = cost;
 };
 const selectNextPart = (partName = 'heads', partIndex = 'head') => {
   /* instance.setupState[partIndex] = getNextValidIndex(
@@ -145,20 +140,9 @@ const selectPreviousPart = (partName = 'heads', partIndex = 'head') => {
   );
 };
 
-/* export default {
-  name: 'RobotBuilder',
-  data() {
-    return {
-    };
-  },
-  computed: {
-
-  },
-  methods: {
-    toCurrency,
-
-  },
-}; */
+const handlePartSelected = (part, partName) => {
+  selectedRobot.value[partName] = part;
+};
 </script>
 
 <style lang="scss" scoped>
